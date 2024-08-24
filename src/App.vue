@@ -1,30 +1,55 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+import { ref } from 'vue';
+import { queryOptions, useQuery } from '@tanstack/vue-query';
+
+const plainOptions = queryOptions({
+  queryKey: ['bacon'],
+  queryFn: () => Promise.resolve(1)
+})
+
+console.log('plainOptions.queryKey', plainOptions.queryKey)
+// tsc
+// expected: DataTag<>
+// actual: DataTag<>
+// runtime
+// expected: ['bacon']
+// actual: ['bacon']
+
+const refOptions = queryOptions(ref({
+  queryKey: ['bacon'],
+  queryFn: () => Promise.resolve(1)
+}))
+
+// refOptions is a Ref object
+
+console.log('refOptions.queryKey', refOptions.queryKey)
+// tsc
+// expected: error
+// actual: DataTag<>
+// runtime
+// expected: undefined
+// actual: undefined
+
+console.log('refOptions.value.queryKey', refOptions.value.queryKey)
+// tsc
+// expected: DataTag
+// actual: error
+// runtime
+// expected: ['bacon']
+// actual ['bacon']
+
+
+
+// This works
+const query1 = useQuery(refOptions)
+
+// This passes tsc but fails in runtime with `TypeError: Cannot read properties of undefined (reading 'enabled')`
+const query2 = useQuery({
+  ...refOptions,
+  placeholderData: 0
+})
 </script>
 
 <template>
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
-  </div>
-  <HelloWorld msg="Vite + Vue" />
+  <div></div>
 </template>
-
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
-</style>
